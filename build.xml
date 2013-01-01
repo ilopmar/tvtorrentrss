@@ -1,0 +1,64 @@
+<project name="tvrss" default="dist" basedir=".">
+    <description>
+        simple example build file
+    </description>
+	
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+  <property name="libs"  location="libs"/>
+  <property name="output"  location="output"/>
+	
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}">
+        <classpath>
+          <pathelement path="${classpath}"/>
+          <pathelement location="${libs}/hsqldb/hsqldb.jar"/>
+          <pathelement location="${libs}/Rome/rome-1.0.jar"/>
+          <pathelement location="${libs}/JDom/jdom.jar"/>
+          <pathelement location="${libs}/commons-email/mail.jar"/>
+          <pathelement location="${libs}/commons-email/commons-email-1.1.jar"/>
+        </classpath>
+  	</javac>
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${dist}/tvrss"/>
+  	<mkdir dir="${output}"/>
+
+  	<!-- unjar libs so we can build a standalone jar file -->
+  	<unjar src="${libs}/hsqldb/hsqldb.jar" dest="${build}" />
+  	<unjar src="${libs}/Rome/rome-1.0.jar" dest="${build}" />
+  	<unjar src="${libs}/JDom/jdom.jar" dest="${build}" />
+  	<unjar src="${libs}/commons-email/commons-email-1.1.jar" dest="${build}" />
+  	<unjar src="${libs}/commons-email/mail.jar" dest="${build}" />
+  	
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar manifest="manifest.txt" jarfile="${dist}/tvrss/tvrss.jar" basedir="${build}"/>
+  	<copy file="tvrss.properties" tofile="${dist}/tvrss/tvrss.properties" />
+  	<copy file="run.cmd" tofile="${dist}/tvrss/run.cmd" />
+  	
+  	<!-- zip into final file -->
+  	<zip basedir="${dist}" destfile="${output}/tvrss-${DSTAMP}.zip" />
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
