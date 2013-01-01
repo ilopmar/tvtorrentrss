@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 import eu.bseboy.tvrss.ShowDetails;
 
-public class DownloadedDAOImpl implements DownloadedDAO {
+public class DownloadedDAOImpl2 implements DownloadedDAO {
 
 	private static final String sync = "syncToken";
 	private static boolean initialised = false;
@@ -20,12 +20,15 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 	
 	private static final String NULL_EXTRA = "NULL";
 	
-	private static final String CREATE_TABLE_1 = "create table downloaded_episodes (showname varchar(100), extrainfo varchar(100), series integer, episode integer) ";
+	//private static final String CREATE_TABLE_1 = "create table downloaded_episodes (showname varchar(100), extrainfo varchar(100), series integer, episode integer) ";
+	private static final String CREATE_TABLE_1 = "create table downloaded_episodes (title varchar(255), url varchar(255)) ";
 	private static final String CHECK_TABLE_1 = "select count(*) from downloaded_episodes";
 	
-	private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where showname = ? and extrainfo = ? and series = ? and episode = ? ";
+	//private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where showname = ? and extrainfo = ? and series = ? and episode = ? ";
+	private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where title = ? and url = ? ";
 	
-	private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (showname, extrainfo, series, episode) values (?,?,?,?)";
+	//private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (showname, extrainfo, series, episode) values (?,?,?,?)";
+	private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (title, url) values (?, ?)";
 	
 	private String nvl(String value, String valueIfNull)
 	{
@@ -46,7 +49,7 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 		System.err.println(message);
 	}
 	
-	public boolean previouslyDownloaded(ShowDetails matchedDetails) {
+	public boolean previouslyDownloaded(String title, String url) {
 		
 		boolean downloaded = false;
 		
@@ -55,14 +58,16 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 		try {
 			c = getConnection();
 			PreparedStatement stmt = c.prepareStatement(CHECK_DOWNLOADED_SQL);
-			stmt.setString(1, matchedDetails.getShowName());
-			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
-			stmt.setInt(3, matchedDetails.getSeries().intValue());
-			stmt.setInt(4, matchedDetails.getEpisode().intValue());
+			stmt.setString(1, title);
+			stmt.setString(2, url);
+//			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
+//			stmt.setInt(3, matchedDetails.getSeries().intValue());
+//			stmt.setInt(4, matchedDetails.getEpisode().intValue());
 			
 			ResultSet rs = stmt.executeQuery();
 
-			debug("Checked for downloads of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
+//			debug("Checked for downloads of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
+			debug("Checked for downloads of: " + title + " with url: " + url);
 
 			int matches = 0;
 			if (rs.next())
@@ -108,23 +113,25 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 	/**
 	 * record the fact that we have downloaded a specific matching episode
 	 */
-	public void recordDownload(ShowDetails matchedDetails) {
+	public void recordDownload(String title, String url) {
 		
 		Connection c = null;
 		
 		try {
 			c = getConnection();
 			CallableStatement stmt = c.prepareCall(RECORD_DOWNLOAD_SQL);
-			stmt.setString(1, matchedDetails.getShowName());
-			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
-			stmt.setInt(3, matchedDetails.getSeries().intValue());
-			stmt.setInt(4, matchedDetails.getEpisode().intValue());
+			stmt.setString(1, title);
+			stmt.setString(2, url);
+//			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
+//			stmt.setInt(3, matchedDetails.getSeries().intValue());
+//			stmt.setInt(4, matchedDetails.getEpisode().intValue());
 			
 			stmt.executeUpdate();
 			stmt.close();
 			c.commit();
 			
-			debug("Recorded download of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
+//			debug("Recorded download of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
+			debug("Recorded download of: " + title + " with url: " + url);
 		}
 		catch (SQLException e1)
 		{
@@ -188,21 +195,10 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 		}
 	}
 	
-	public DownloadedDAOImpl()
+	public DownloadedDAOImpl2()
 	{
 		super();
 		initialiseSchema();
 	}
 
-	@Override
-	public void recordDownload(String title, String url) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean previouslyDownloaded(String title, String url) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 }

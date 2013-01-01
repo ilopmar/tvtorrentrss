@@ -41,25 +41,25 @@ public class DownloadStreamFactory {
 		return os;
 	}
 	
-	private static OutputStream createOutputStream(String location, ShowDetails show) throws IOException
+	private static OutputStream createOutputStream(String location) throws IOException
 	{
 		// only handle files for now
 		OutputStream os = null;
 
-		if (location.startsWith("email:"))
-		{
-			// email prefix, send the file to the specified email address
-			os = createEmailOutputStream(location.substring(6), show);
-		}
-		else {
+//		if (location.startsWith("email:"))
+//		{
+//			// email prefix, send the file to the specified email address
+//			os = createEmailOutputStream(location.substring(6), show);
+//		}
+//		else {
 			// default is to use a file location (no prefix)
 			os = createFileOutputStream(location);			
-		}
+//		}
 		
 		return os;
 	}
 	
-	public static OutputStream[] createDownloadOutputStreams(Configuration conf, ShowDetails show) throws IOException
+	public static OutputStream[] createDownloadOutputStreams(Configuration conf) throws IOException
 	{
 		OutputStream[] osArray = null;
 		int numLocs = 0;
@@ -78,7 +78,7 @@ public class DownloadStreamFactory {
 		locs = conf.getDownloadLocations();
 		while(locs.hasNext())
 		{
-			osArray[numLocs] = createOutputStream(locs.next(), show);
+			osArray[numLocs] = createOutputStream(locs.next());
 			numLocs++;
 		}		
 		

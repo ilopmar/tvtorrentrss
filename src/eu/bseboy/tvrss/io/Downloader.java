@@ -50,16 +50,16 @@ public class Downloader {
 	 */
 	public boolean downloadItem(InputStream inS, String filename) {
 		// create dummy show object
-		ShowDetails show = new ShowDetails();
-		show.setShowName(filename);
-		show.setEpisode(new Integer(0));
-		show.setExtraInfo("");
-		show.setSeries(new Integer(0));
+//		ShowDetails show = new ShowDetails();
+//		show.setShowName(filename);
+//		show.setEpisode(new Integer(0));
+//		show.setExtraInfo("");
+//		show.setSeries(new Integer(0));
 		
 		boolean success = false;
 		
 		try {
-			success = download(inS, show);
+			success = download(inS);
 		} catch (Exception e) {
 			error("Unable to download file : " + filename);
 			error(e.getMessage());
@@ -68,14 +68,14 @@ public class Downloader {
 		return success;
 	}
 	
-	private boolean download(InputStream inS, ShowDetails matchedShow) throws Exception {
+	private boolean download(InputStream inS) throws Exception {
 		boolean success = false;
 		
 		long totalBytes = 0;
 		byte[] chunk = new byte[1024];  // read 1K at a time
 		int bytesRead = 0;
 		
-		OutputStream[] outS = DownloadStreamFactory.createDownloadOutputStreams(config, matchedShow);
+		OutputStream[] outS = DownloadStreamFactory.createDownloadOutputStreams(config);
 		
 		// create flag to record error per stream
 		boolean[] streamError = new boolean[outS.length];
@@ -145,7 +145,7 @@ public class Downloader {
 	 * @param matchedShow
 	 * @return true if at least ONE of the downloads succeeded
 	 */
-	public boolean downloadItem(String itemURL, ShowDetails matchedShow)
+	public boolean downloadItem(String itemURL)
 	{
 		boolean success = false;
 		
@@ -155,7 +155,7 @@ public class Downloader {
 			// create the input stream
 			InputStream inS = url.openStream();
 			// and download from it
-			success = download(inS, matchedShow);
+			success = download(inS);
 			
 		} catch (Exception e)
 		{

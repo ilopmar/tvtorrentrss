@@ -15,6 +15,7 @@ import eu.bseboy.tvrss.config.Configuration;
 import eu.bseboy.tvrss.config.SearchItem;
 import eu.bseboy.tvrss.dao.DownloadedDAO;
 import eu.bseboy.tvrss.dao.DownloadedDAOImpl;
+import eu.bseboy.tvrss.dao.DownloadedDAOImpl2;
 import eu.bseboy.tvrss.io.Downloader;
 import eu.bseboy.tvrss.matching.EpisodeMatcher;
 
@@ -76,7 +77,7 @@ public class RssDownloader {
 	public void runProcess() throws Exception
 	{
 		EpisodeMatcher matcher = new EpisodeMatcher();
-		DownloadedDAO dao = new DownloadedDAOImpl();
+		DownloadedDAO dao = new DownloadedDAOImpl2();
 				
 		Downloader downloader = new Downloader(conf);
 		
@@ -106,22 +107,26 @@ public class RssDownloader {
 						debug("======================================================================");
 						debug("Title: " + entry.getTitle());
 						
-						ShowDetails show = matcher.deduceShowDetails(entry.getTitle());
-						
-						// for each search item in the configuration ...
-						Iterator<SearchItem> items = conf.getSearchItemIterator();				
-						while (items.hasNext())
-						{
-							SearchItem searchItem = items.next();
+//						ShowDetails show = matcher.deduceShowDetails(entry.getTitle());
+//						
+//						// for each search item in the configuration ...
+//						Iterator<SearchItem> items = conf.getSearchItemIterator();				
+//						while (items.hasNext())
+//						{
+//							SearchItem searchItem = items.next();
 							
-							boolean matches = matcher.matchesSearch(searchItem, show);
-							if (matches) {
+							//boolean matches = matcher.matchesSearch(searchItem, show);
+							//if (matches) {
 								
 								// the item matches the episode / show filter
 								// now check if it has been downloaded before
-								ShowDetails matchedDetails = createMatchedDetails(show, searchItem);
+								//ShowDetails matchedDetails = createMatchedDetails(show, searchItem);
+							
+								List<SyndEnclosure> enclosures = (List<SyndEnclosure>)entry.getEnclosures();
+								SyndEnclosure enclosure = enclosures.get(0);
+								String url = enclosure.getUrl();
 								
-								boolean downloaded = dao.previouslyDownloaded(matchedDetails);
+								boolean downloaded = dao.previouslyDownloaded(entry.getTitle(), url);
 								
 								if (downloaded)
 								{
@@ -130,21 +135,25 @@ public class RssDownloader {
 								else 
 								{
 									// we may have URL in show object if eztv item ...
-									String url = show.getUrlFromTitle();
-									if (url == null) {
+									//String url = show.getUrlFromTitle();
+									//if (url == null) {
+									
+									/**
 										// we now need to get the download link
 										List<SyndEnclosure> enclosures = (List<SyndEnclosure>)entry.getEnclosures();
 										SyndEnclosure enclosure = enclosures.get(0);
-										url = enclosure.getUrl();
-									}
+										String url = enclosure.getUrl();
+										
+										**/
+									//}
 									
 									debug("DOWNLOADING : " + url);
-									downloaded = downloader.downloadItem(url, matchedDetails);
+									downloaded = downloader.downloadItem(url);
 									
 									if (downloaded)
 									{
 										// record this download ...
-										dao.recordDownload(matchedDetails);
+										dao.recordDownload(entry.getTitle(), url);
 										debug("SUCCESS - FLAGGED AS DOWNLOADED");
 									}
 									else
@@ -152,8 +161,8 @@ public class RssDownloader {
 										error("FAILED TO DOWNLOAD ITEM");
 									}
 								} // not downloaded before
-							} //  if (matches)
-						} // search item iterator
+							//} //  if (matches)
+						//} // search item iterator
 					} // rss item iterator
 				} // rss entries not null
 			} // try block
@@ -182,7 +191,7 @@ public class RssDownloader {
 		RssDownloader downloader = new RssDownloader(filename);
 		downloader.runProcess();
 		
-		EmailDownloader eDownloader = new EmailDownloader(filename);
-		eDownloader.runProcess();
+//		EmailDownloader eDownloader = new EmailDownloader(filename);
+//		eDownloader.runProcess();
 	}
 }
