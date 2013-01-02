@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
-import eu.bseboy.tvrss.ShowDetails;
 import eu.bseboy.tvrss.config.Configuration;
 
 public class Downloader {
@@ -49,13 +48,6 @@ public class Downloader {
 	 * @return
 	 */
 	public boolean downloadItem(InputStream inS, String filename) {
-		// create dummy show object
-//		ShowDetails show = new ShowDetails();
-//		show.setShowName(filename);
-//		show.setEpisode(new Integer(0));
-//		show.setExtraInfo("");
-//		show.setSeries(new Integer(0));
-		
 		boolean success = false;
 		
 		try {
@@ -84,20 +76,16 @@ public class Downloader {
 		startProgressDisplay();
 		
 		// read data in blocks, into array 'chunk'
-		do
-		{
+		do {
 			bytesRead = inS.read(chunk);
 			// write each chunk to each output stream ...
-			for (int i = 0; (bytesRead > 0) && (i < outS.length); i++)
-			{
+			for (int i = 0; (bytesRead > 0) && (i < outS.length); i++) {
 				try {
 					// only write bytes if no error on this stream
 					if (streamError[i] == false) {
 						outS[i].write(chunk, 0, bytesRead);
 					}
-				}
-				catch (IOException ioe)
-				{
+				} catch (IOException ioe) {
 					// record that the output stream encountered an error
 					streamError[i] = true;
 					error("Error writing to stream " + ioe.getMessage());
@@ -113,15 +101,11 @@ public class Downloader {
 		debug("TOTAL BYTES READ : " + totalBytes);
 		
 		// close all output streams
-		for (int i = 0; i < outS.length; i++)
-		{
-			try
-			{
+		for (int i = 0; i < outS.length; i++) {
+			try {
 				outS[i].flush();
 				outS[i].close();
-			}
-			catch (IOException ioe)
-			{
+			} catch (IOException ioe) {
 				// record that the output stream encountered an error
 				streamError[i] = true;
 				error("Error closing stream " + ioe.getMessage());
@@ -131,9 +115,10 @@ public class Downloader {
 		inS.close();
 		
 		// indicate it worked if any stream had no errors ...
-		for (int i = 0; i < outS.length; i++)
-		{
-			if (streamError[i] == false) { success = true; }
+		for (int i = 0; i < outS.length; i++) {
+			if (streamError[i] == false) { 
+				success = true;
+			}
 		} 
 		
 		return success;
@@ -145,8 +130,7 @@ public class Downloader {
 	 * @param matchedShow
 	 * @return true if at least ONE of the downloads succeeded
 	 */
-	public boolean downloadItem(String itemURL)
-	{
+	public boolean downloadItem(String itemURL) {
 		boolean success = false;
 		
 		try {
@@ -157,13 +141,11 @@ public class Downloader {
 			// and download from it
 			success = download(inS);
 			
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			error("Failed to download item : " + itemURL);
 			error(e.getMessage());
 		}
 		
 		return success;
 	}
-	
 }

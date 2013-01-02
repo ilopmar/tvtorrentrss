@@ -7,35 +7,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import eu.bseboy.tvrss.ShowDetails;
-
 public class DownloadedDAOImpl implements DownloadedDAO {
 
 	private static final String sync = "syncToken";
 	private static boolean initialised = false;
-	
+
 	private static final String dbURL = "jdbc:hsqldb:file:downloaded";
 	private static final String dbUser = "sa";
 	private static final String dbPwd = "";
-	
-	private static final String NULL_EXTRA = "NULL";
-	
-	private static final String CREATE_TABLE_1 = "create table downloaded_episodes (showname varchar(100), extrainfo varchar(100), series integer, episode integer) ";
-	private static final String CHECK_TABLE_1 = "select count(*) from downloaded_episodes";
-	
-	private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where showname = ? and extrainfo = ? and series = ? and episode = ? ";
-	
-	private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (showname, extrainfo, series, episode) values (?,?,?,?)";
-	
-	private String nvl(String value, String valueIfNull)
-	{
-		if (value != null) {
-			return value;
-		} else 
-		{
-			return valueIfNull;
-		}
-	}
+
+	private static final String CREATE_TABLE = "create table downloaded_episodes (title varchar(255), url varchar(255)) ";
+	private static final String CHECK_TABLE = "select count(*) from downloaded_episodes";
+
+	private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where title = ? and url = ? ";
+
+	private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (title, url) values (?, ?)";
+
 
 	private void debug(String message)
 	{
@@ -45,46 +32,40 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 	{
 		System.err.println(message);
 	}
-	
-	public boolean previouslyDownloaded(ShowDetails matchedDetails) {
-		
+
+	public boolean previouslyDownloaded(String title, String url) {
+
 		boolean downloaded = false;
-		
+
 		Connection c = null;
-		
+
 		try {
 			c = getConnection();
 			PreparedStatement stmt = c.prepareStatement(CHECK_DOWNLOADED_SQL);
-			stmt.setString(1, matchedDetails.getShowName());
-			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
-			stmt.setInt(3, matchedDetails.getSeries().intValue());
-			stmt.setInt(4, matchedDetails.getEpisode().intValue());
-			
+			stmt.setString(1, title);
+			stmt.setString(2, url);
+
 			ResultSet rs = stmt.executeQuery();
 
-			debug("Checked for downloads of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
+			debug("Checked for downloads of: " + title + " with url: " + url);
 
 			int matches = 0;
-			if (rs.next())
-			{
+			if (rs.next()) {
 				matches = rs.getInt(1);
 			}
-			
-			if (matches > 0)
-			{
+
+			if (matches > 0) {
 				debug("Downloaded " + matches + " times before");
 				downloaded = true;
 			}
-			
+
 			rs.close();
 			stmt.close();
 			c.close();
-		} 
-		catch (SQLException e)
-		{
+		} catch (SQLException e) {
 			error(e.getMessage());
 		}
-		
+
 		return downloaded;
 	}
 
@@ -98,9 +79,7 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 			stmt.execute();
 			c.close();
 			debug("Database shutdown called");
-		} 
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			error(e.getMessage());
 		}
 	}
@@ -108,56 +87,52 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 	/**
 	 * record the fact that we have downloaded a specific matching episode
 	 */
-	public void recordDownload(ShowDetails matchedDetails) {
-		
+	public void recordDownload(String title, String url) {
+
 		Connection c = null;
-		
+
 		try {
 			c = getConnection();
 			CallableStatement stmt = c.prepareCall(RECORD_DOWNLOAD_SQL);
-			stmt.setString(1, matchedDetails.getShowName());
-			stmt.setString(2, nvl(matchedDetails.getExtraInfo(), NULL_EXTRA));
-			stmt.setInt(3, matchedDetails.getSeries().intValue());
-			stmt.setInt(4, matchedDetails.getEpisode().intValue());
-			
+			stmt.setString(1, title);
+			stmt.setString(2, url);
+
 			stmt.executeUpdate();
 			stmt.close();
 			c.commit();
-			
-			debug("Recorded download of : " + matchedDetails.getShowName() + " : " + matchedDetails.getExtraInfo() + " : " + matchedDetails.getSeries().intValue() + " : " + matchedDetails.getEpisode().intValue());
-		}
-		catch (SQLException e1)
-		{
+
+			debug("Recorded download of: " + title + " with url: " + url);
+		} catch (SQLException e1) {
 			error(e1.getMessage());
 		}
 		finally {
-			try { c.close();} catch (SQLException e2) { error(e2.getMessage()); }
+			try { 
+				c.close();
+			} catch (SQLException e2) { 
+				error(e2.getMessage());
+			}
 		}
 
 	}
-	
-	private Connection getConnection() throws SQLException
-	{
+
+	private Connection getConnection() throws SQLException {
 		Connection c = DriverManager.getConnection(dbURL, dbUser, dbPwd);
 		return c;
 	}
-	
+
 	/**
 	 * creates the DB tables on first run
 	 */
-	private void initialiseSchema()
-	{
-		synchronized(sync)
-		{
-			if (initialised == false)
-			{
-			    try {
-			        Class.forName("org.hsqldb.jdbcDriver" );
-			    } catch (Exception e) {
-			        error("ERROR: failed to load HSQLDB JDBC driver.");
-			        error(e.getMessage());
-			        return;
-			    }
+	private void initialiseSchema() {
+		synchronized(sync) {
+			if (initialised == false) {
+				try {
+					Class.forName("org.hsqldb.jdbcDriver" );
+				} catch (Exception e) {
+					error("ERROR: failed to load HSQLDB JDBC driver.");
+					error(e.getMessage());
+					return;
+				}
 
 				// only try and initialise once 
 				initialised = true;
@@ -166,43 +141,30 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 				try {
 					c = getConnection();
 					try {
-						PreparedStatement pstmt = c.prepareStatement(CHECK_TABLE_1);
+						PreparedStatement pstmt = c.prepareStatement(CHECK_TABLE);
 						pstmt.executeQuery();
 						debug("Check passed - table already exists");
-					} catch (SQLException e1)
-					{
+					} catch (SQLException e1) {
 						error("Exception checking downloads table " + e1.getMessage());
-						CallableStatement stmt = c.prepareCall(CREATE_TABLE_1);
+						CallableStatement stmt = c.prepareCall(CREATE_TABLE);
 						stmt.execute();
-						debug("Created table with SQL " + CREATE_TABLE_1);
+						debug("Created table with SQL " + CREATE_TABLE);
 					}
-				} catch (SQLException e)
-				{
+				} catch (SQLException e) {
 					error("Exception trying to create downloads table " + e.getMessage());
-				}
-				finally
-				{
-					try { c.close(); } catch (SQLException e) {}
+				} finally {
+					try { 
+						c.close();
+					} catch (SQLException e) {
+
+					}
 				}
 			}
 		}
 	}
-	
-	public DownloadedDAOImpl()
-	{
+
+	public DownloadedDAOImpl() {
 		super();
 		initialiseSchema();
-	}
-
-	@Override
-	public void recordDownload(String title, String url) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean previouslyDownloaded(String title, String url) {
-		// TODO Auto-generated method stub
-		return false;
 	}
 }

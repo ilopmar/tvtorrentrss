@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import eu.bseboy.tvrss.ShowDetails;
 import eu.bseboy.tvrss.config.Configuration;
-import eu.bseboy.tvrss.io.email.EmailOutputStream;
 
 public class DownloadStreamFactory {
 
@@ -22,8 +20,7 @@ public class DownloadStreamFactory {
 		System.err.println(message);
 	}
 	
-	private static OutputStream createFileOutputStream(String location) throws IOException
-	{
+	private static OutputStream createFileOutputStream(String location) throws IOException {
 		File dir = new File(location);
 		File tempFile = File.createTempFile("download_", ".torrent", dir);
 		
@@ -34,41 +31,23 @@ public class DownloadStreamFactory {
 		return fos;
 	}
 	
-	private static OutputStream createEmailOutputStream(String emailAddress, ShowDetails show) throws IOException
-	{
-		debug("Creating email stream handler ...");
-		OutputStream os = new EmailOutputStream(emailAddress, show);
-		return os;
-	}
-	
-	private static OutputStream createOutputStream(String location) throws IOException
-	{
+	private static OutputStream createOutputStream(String location) throws IOException {
 		// only handle files for now
 		OutputStream os = null;
 
-//		if (location.startsWith("email:"))
-//		{
-//			// email prefix, send the file to the specified email address
-//			os = createEmailOutputStream(location.substring(6), show);
-//		}
-//		else {
-			// default is to use a file location (no prefix)
-			os = createFileOutputStream(location);			
-//		}
-		
+		os = createFileOutputStream(location);			
+	
 		return os;
 	}
 	
-	public static OutputStream[] createDownloadOutputStreams(Configuration conf) throws IOException
-	{
+	public static OutputStream[] createDownloadOutputStreams(Configuration conf) throws IOException {
 		OutputStream[] osArray = null;
 		int numLocs = 0;
 		
 		Iterator<String> locs = conf.getDownloadLocations();
 		
 		// count number of locations ...
-		while(locs.hasNext())
-		{
+		while(locs.hasNext()) {
 			numLocs++;
 			locs.next();
 		}
@@ -76,8 +55,7 @@ public class DownloadStreamFactory {
 		
 		numLocs = 0;
 		locs = conf.getDownloadLocations();
-		while(locs.hasNext())
-		{
+		while(locs.hasNext()) {
 			osArray[numLocs] = createOutputStream(locs.next());
 			numLocs++;
 		}		

@@ -8,13 +8,11 @@ public class FeedList {
 
 	private List<String> feedList = new ArrayList<String>();
 	
-	public void addFeed(String feedURL)
-	{
+	public void addFeed(String feedURL) {
 		feedList.add(feedURL);
 	}
 	
-	public Iterator<String> iterator()
-	{
+	public Iterator<String> iterator() {
 		return feedList.iterator();
 	}
 }
