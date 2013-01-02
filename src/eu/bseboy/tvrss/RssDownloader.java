@@ -4,6 +4,9 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.sun.syndication.feed.synd.SyndEnclosure;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -17,6 +20,8 @@ import eu.bseboy.tvrss.io.Downloader;
 
 public class RssDownloader {
 	
+	protected static final Log log = LogFactory.getLog(RssDownloader.class);
+
 	private static final String defaultConfig = "./tvrss.properties";
 
 	Configuration conf;
@@ -38,13 +43,6 @@ public class RssDownloader {
 		return config;
 	}
 
-	private void debug(String message) {
-		System.out.println(message);
-	}
-	private void error(String message) {
-		System.err.println(message);
-	}	
-
 	@SuppressWarnings("unchecked")
 	public void runProcess() throws Exception {
 		DownloadedDAO dao = new DownloadedDAOImpl();
@@ -56,12 +54,12 @@ public class RssDownloader {
 		// for each feed in the configuration ...
 		while (feeds.hasNext()) {
 			String feedURL = feeds.next();
-			debug("Feed URL - " + feedURL);
+			log.debug("Feed URL - " + feedURL);
 
 			try {
 				SyndFeedInput feedIn = new SyndFeedInput();
 				SyndFeed feed = feedIn.build(new XmlReader(new URL(feedURL)));
-				debug("Feed Type : " + feed.getFeedType());
+				log.debug("Feed Type : " + feed.getFeedType());
 
 				// for each item in the current feed ....
 				List<SyndEntry> entries = (List<SyndEntry>)feed.getEntries();
@@ -71,8 +69,8 @@ public class RssDownloader {
 						// get item details ...
 						SyndEntry entry = iter.next();
 
-						debug("======================================================================");
-						debug("Title: " + entry.getTitle());
+						log.debug("======================================================================");
+						log.debug("Title: " + entry.getTitle());
 
 						List<SyndEnclosure> enclosures = (List<SyndEnclosure>)entry.getEnclosures();
 						SyndEnclosure enclosure = enclosures.get(0);
@@ -81,23 +79,23 @@ public class RssDownloader {
 						boolean downloaded = dao.previouslyDownloaded(entry.getTitle(), url);
 
 						if (downloaded) {
-							debug("PREVIOUSLY DOWNLOADED");
+							log.debug("PREVIOUSLY DOWNLOADED");
 						} else {
-							debug("DOWNLOADING : " + url);
+							log.debug("DOWNLOADING : " + url);
 							downloaded = downloader.downloadItem(url);
 
 							if (downloaded) {
 								// record this download ...
 								dao.recordDownload(entry.getTitle(), url);
-								debug("SUCCESS - FLAGGED AS DOWNLOADED");
+								log.debug("SUCCESS - FLAGGED AS DOWNLOADED");
 							} else {
-								error("FAILED TO DOWNLOAD ITEM");
+								log.error("FAILED TO DOWNLOAD ITEM");
 							}
 						}
 					}
 				}
 			} catch (Exception e) {
-				error("Failed to load feed " + feedURL + " : " + e.getMessage());
+				log.error("Failed to load feed " + feedURL + " : " + e.getMessage());
 			}
 		}
 

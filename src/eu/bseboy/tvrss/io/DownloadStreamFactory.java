@@ -6,25 +6,20 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import eu.bseboy.tvrss.config.Configuration;
 
 public class DownloadStreamFactory {
-
-	private static void debug(String message)
-	{
-		System.out.println(message);
-	}
-	@SuppressWarnings("unused")
-	private static void error(String message)
-	{
-		System.err.println(message);
-	}
 	
+	protected static final Log log = LogFactory.getLog(DownloadStreamFactory.class);
+
 	private static OutputStream createFileOutputStream(String location) throws IOException {
 		File dir = new File(location);
 		File tempFile = File.createTempFile("download_", ".torrent", dir);
 		
-		debug("Created output file : " + tempFile.getAbsolutePath());
+		log.debug("Created output file : " + tempFile.getAbsolutePath());
 		
 		FileOutputStream fos = new FileOutputStream(tempFile);
 		

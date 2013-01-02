@@ -7,8 +7,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class DownloadedDAOImpl implements DownloadedDAO {
 
+	protected static final Log log = LogFactory.getLog(DownloadedDAOImpl.class);
+	
 	private static final String sync = "syncToken";
 	private static boolean initialised = false;
 
@@ -22,16 +27,6 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 	private static final String CHECK_DOWNLOADED_SQL = "select count(*) from downloaded_episodes where title = ? and url = ? ";
 
 	private static final String RECORD_DOWNLOAD_SQL = "insert into downloaded_episodes (title, url) values (?, ?)";
-
-
-	private void debug(String message)
-	{
-		System.out.println(message);
-	}
-	private void error(String message)
-	{
-		System.err.println(message);
-	}
 
 	public boolean previouslyDownloaded(String title, String url) {
 
@@ -47,7 +42,7 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 
 			ResultSet rs = stmt.executeQuery();
 
-			debug("Checked for downloads of: " + title + " with url: " + url);
+			log.debug("Checked for downloads of: " + title + " with url: " + url);
 
 			int matches = 0;
 			if (rs.next()) {
@@ -55,7 +50,7 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 			}
 
 			if (matches > 0) {
-				debug("Downloaded " + matches + " times before");
+				log.debug("Downloaded " + matches + " times before");
 				downloaded = true;
 			}
 
@@ -63,7 +58,7 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 			stmt.close();
 			c.close();
 		} catch (SQLException e) {
-			error(e.getMessage());
+			log.error(e.getMessage());
 		}
 
 		return downloaded;
@@ -78,9 +73,9 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 			CallableStatement stmt = c.prepareCall("SHUTDOWN");
 			stmt.execute();
 			c.close();
-			debug("Database shutdown called");
+			log.debug("Database shutdown called");
 		} catch (Exception e) {
-			error(e.getMessage());
+			log.error(e.getMessage());
 		}
 	}
 
@@ -101,15 +96,15 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 			stmt.close();
 			c.commit();
 
-			debug("Recorded download of: " + title + " with url: " + url);
+			log.debug("Recorded download of: " + title + " with url: " + url);
 		} catch (SQLException e1) {
-			error(e1.getMessage());
+			log.error(e1.getMessage());
 		}
 		finally {
 			try { 
 				c.close();
 			} catch (SQLException e2) { 
-				error(e2.getMessage());
+				log.error(e2.getMessage());
 			}
 		}
 
@@ -129,8 +124,8 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 				try {
 					Class.forName("org.hsqldb.jdbcDriver" );
 				} catch (Exception e) {
-					error("ERROR: failed to load HSQLDB JDBC driver.");
-					error(e.getMessage());
+					log.error("ERROR: failed to load HSQLDB JDBC driver.");
+					log.error(e.getMessage());
 					return;
 				}
 
@@ -143,15 +138,15 @@ public class DownloadedDAOImpl implements DownloadedDAO {
 					try {
 						PreparedStatement pstmt = c.prepareStatement(CHECK_TABLE);
 						pstmt.executeQuery();
-						debug("Check passed - table already exists");
+						log.debug("Check passed - table already exists");
 					} catch (SQLException e1) {
-						error("Exception checking downloads table " + e1.getMessage());
+						log.error("Exception checking downloads table " + e1.getMessage());
 						CallableStatement stmt = c.prepareCall(CREATE_TABLE);
 						stmt.execute();
-						debug("Created table with SQL " + CREATE_TABLE);
+						log.debug("Created table with SQL " + CREATE_TABLE);
 					}
 				} catch (SQLException e) {
-					error("Exception trying to create downloads table " + e.getMessage());
+					log.error("Exception trying to create downloads table " + e.getMessage());
 				} finally {
 					try { 
 						c.close();

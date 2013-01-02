@@ -5,41 +5,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import eu.bseboy.tvrss.config.Configuration;
 
 public class Downloader {
+	
+	protected static final Log log = LogFactory.getLog(Downloader.class);
 
 	private Configuration config;
 
-	private void debug(String message)
-	{
-		System.out.println(message);
-	}
-	private void error(String message)
-	{
-		System.err.println(message);
-	}
-	
-	private void moveProgressDisplay()
-	{
-		System.out.print(".");
-	}
-	
-	private void endProgressDisplay()
-	{
-		System.out.println("]");
-	}
-
-	private void startProgressDisplay()
-	{
-		System.out.print("[");
-	}
-	
-	public Downloader(Configuration configuration)
-	{
+	public Downloader(Configuration configuration) {
 		this.config = configuration;
 	}
-	
+
 	
 	/**
 	 * Download from an input stream using the filename supplied
@@ -53,8 +33,8 @@ public class Downloader {
 		try {
 			success = download(inS);
 		} catch (Exception e) {
-			error("Unable to download file : " + filename);
-			error(e.getMessage());
+			log.error("Unable to download file : " + filename);
+			log.error(e.getMessage());
 		}
 		
 		return success;
@@ -73,8 +53,6 @@ public class Downloader {
 		boolean[] streamError = new boolean[outS.length];
 		for (int i = 0; i < outS.length; i++) { streamError[i] = false; }
 		
-		startProgressDisplay();
-		
 		// read data in blocks, into array 'chunk'
 		do {
 			bytesRead = inS.read(chunk);
@@ -88,17 +66,14 @@ public class Downloader {
 				} catch (IOException ioe) {
 					// record that the output stream encountered an error
 					streamError[i] = true;
-					error("Error writing to stream " + ioe.getMessage());
+					log.error("Error writing to stream " + ioe.getMessage());
 				}
 			}
 			totalBytes += bytesRead;
-			moveProgressDisplay();
 		}
 		while (bytesRead > 0);
 		
-		endProgressDisplay();
-		
-		debug("TOTAL BYTES READ : " + totalBytes);
+		log.debug("TOTAL BYTES READ : " + totalBytes);
 		
 		// close all output streams
 		for (int i = 0; i < outS.length; i++) {
@@ -108,7 +83,7 @@ public class Downloader {
 			} catch (IOException ioe) {
 				// record that the output stream encountered an error
 				streamError[i] = true;
-				error("Error closing stream " + ioe.getMessage());
+				log.error("Error closing stream " + ioe.getMessage());
 			}
 		}
 		
@@ -142,8 +117,8 @@ public class Downloader {
 			success = download(inS);
 			
 		} catch (Exception e) {
-			error("Failed to download item : " + itemURL);
-			error(e.getMessage());
+			log.error("Failed to download item : " + itemURL);
+			log.error(e.getMessage());
 		}
 		
 		return success;

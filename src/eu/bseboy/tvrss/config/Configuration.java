@@ -9,27 +9,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class Configuration {
+	
+	protected static final Log log = LogFactory.getLog(Configuration.class);
 
 	private List<String> downloadLocations = new ArrayList<String>();
 	private FeedList feedList = new FeedList();
 
-	private void debug(String message) {
-		System.out.println(message);
-	}
-	
-	private void error(String message) {
-		System.err.println(message);
-	}
-	
 	private void loadFeedProperty(String value) {
 		feedList.addFeed(value);
-		debug("Configured feed : " + value);
+		log.debug("Configured feed : " + value);
 	}
 	
 	private void loadLocationProperty(String value) {
 		downloadLocations.add(value);
-		debug("Configured location : " + value);
+		log.debug("Configured location : " + value);
 	}
 	
 	public boolean loadConfiguration(String filename)
@@ -43,7 +40,7 @@ public class Configuration {
 			inS.close();
 		} 
 		catch (IOException e) {
-			error("Error loading configuration file " + e.getMessage());
+			log.error("Error loading configuration file " + e.getMessage());
 		}
 		
 		return success;
@@ -76,7 +73,7 @@ public class Configuration {
 			
 			success = true;
 		} catch (IOException e) {
-			error(e.getMessage());
+			log.error(e.getMessage());
 		}
 		
 		return success;
