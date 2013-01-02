@@ -1,64 +1,62 @@
-<project name="tvrss" default="dist" basedir=".">
-    <description>
-        simple example build file
-    </description>
+<project name="tvrss" default="" basedir=".">
+	<description>tvrss build file</description>
 	
-  <!-- set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
-  <property name="libs"  location="libs"/>
-  <property name="output"  location="output"/>
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist"  location="dist"/>
+	<property name="libs"  location="libs"/>
+	<property name="conf"  location="conf"/>
+    <property name="output"  location="output"/>
 	
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
-  </target>
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+    </target>
 
-  <target name="compile" depends="init"
-        description="compile the source " >
-    <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}">
-        <classpath>
-          <pathelement path="${classpath}"/>
-          <pathelement location="${libs}/hsqldb/hsqldb.jar"/>
-          <pathelement location="${libs}/Rome/rome-1.0.jar"/>
-          <pathelement location="${libs}/JDom/jdom.jar"/>
-          <pathelement location="${libs}/commons-email/mail.jar"/>
-          <pathelement location="${libs}/commons-email/commons-email-1.1.jar"/>
-        </classpath>
-  	</javac>
-  </target>
+    <target name="compile" depends="init" description="compile the source " >
+        <!-- Compile the java code from ${src} into ${build} -->
+        <javac srcdir="${src}" destdir="${build}">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <pathelement location="${libs}/hsqldb.jar"/>
+                <pathelement location="${libs}/rome-1.0.jar"/>
+                <pathelement location="${libs}/jdom.jar"/>
+                <pathelement location="${libs}/commons-logging-1.1.1.jar"/>
+                <pathelement location="${libs}/log4j-1.2.17.jar"/>
+            </classpath>
+        </javac>
+    </target>
 
-  <target name="dist" depends="compile"
-        description="generate the distribution" >
-    <!-- Create the distribution directory -->
-    <mkdir dir="${dist}"/>
-    <mkdir dir="${dist}/tvrss"/>
-  	<mkdir dir="${output}"/>
+    <target name="dist" depends="compile" description="generate the distribution" >
+        <!-- Create the distribution directory -->
+        <mkdir dir="${dist}"/>
+        <mkdir dir="${output}"/>
+    	
+    	<!-- Copy log4j configuration file to final destination -->
+    	<copy file="${conf}/log4j.xml" tofile="${build}/log4j.xml" />
 
-  	<!-- unjar libs so we can build a standalone jar file -->
-  	<unjar src="${libs}/hsqldb/hsqldb.jar" dest="${build}" />
-  	<unjar src="${libs}/Rome/rome-1.0.jar" dest="${build}" />
-  	<unjar src="${libs}/JDom/jdom.jar" dest="${build}" />
-  	<unjar src="${libs}/commons-email/commons-email-1.1.jar" dest="${build}" />
-  	<unjar src="${libs}/commons-email/mail.jar" dest="${build}" />
+        <!-- unjar libs so we can build a standalone jar file -->
+        <unjar src="${libs}/hsqldb.jar" dest="${build}" />
+        <unjar src="${libs}/rome-1.0.jar" dest="${build}" />
+        <unjar src="${libs}/jdom.jar" dest="${build}" />
+        <unjar src="${libs}/commons-logging-1.1.1.jar" dest="${build}" />
+        <unjar src="${libs}/log4j-1.2.17.jar" dest="${build}" />
   	
-    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
-    <jar manifest="manifest.txt" jarfile="${dist}/tvrss/tvrss.jar" basedir="${build}"/>
-  	<copy file="tvrss.properties" tofile="${dist}/tvrss/tvrss.properties" />
-  	<copy file="run.cmd" tofile="${dist}/tvrss/run.cmd" />
+        <!-- Put everything in ${build} into the tvrss-${DSTAMP}.jar file -->
+        <jar manifest="${conf}/manifest.txt" jarfile="${dist}/tvrss.jar" basedir="${build}"/>
+        <copy file="tvrss.properties" tofile="${dist}/tvrss.properties" />
+    	<copy file="run.sh" tofile="${dist}/run.sh" />
   	
-  	<!-- zip into final file -->
-  	<zip basedir="${dist}" destfile="${output}/tvrss-${DSTAMP}.zip" />
-  </target>
+      	<!-- zip into final file -->
+        <zip basedir="${dist}" destfile="${output}/tvrss-${DSTAMP}.zip" />
+    </target>
 
-  <target name="clean"
-        description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
-  </target>
+    <target name="clean" description="clean up" >
+        <!-- Delete the ${build} and ${dist} directory trees -->
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
 </project>
