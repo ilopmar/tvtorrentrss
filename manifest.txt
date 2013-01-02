@@ -1,1 +1,0 @@
-Main-Class: eu.bseboy.tvrss.RssDownloader
