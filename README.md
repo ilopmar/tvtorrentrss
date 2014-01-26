@@ -2,6 +2,7 @@ tvtorrentrss
 ============
 
 [![Still maintained](http://stillmaintained.com/lmivan/tvtorrentrss.png)](http://stillmaintained.com/lmivan/tvtorrentrss)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/lmivan/tvtorrentrss/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 This project is a fork of the original [TV Torrent RSS Downloader](https://sourceforge.net/projects/tvtorrentrss/) project, to clean up the code a little bit and remove all features that I don't need and to add a new feature: *download all files from a rss source*.
 
